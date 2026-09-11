@@ -58,6 +58,7 @@ public final class Version {
     public static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 2000200; // 2.0.2
 
     public static final int HIGHEST_PROTOCOL_VERSION = 2009900; // 2.0.99
+    public static final String BUILD_TIMESTAMP = "2024-01-01T12:00:00Z";
     private static final Map<String, Integer> VERSION2INT = new HashMap<>();
 
     static {
