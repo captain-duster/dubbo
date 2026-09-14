@@ -110,6 +110,11 @@ public final class Version {
         return VERSION;
     }
 
+    public static String getMajorVersion() {
+        String[] vArr = VERSION.split("\\.");
+        return vArr[0];
+    }
+
     public static String getLastCommitId() {
         return LATEST_COMMIT_ID;
     }
