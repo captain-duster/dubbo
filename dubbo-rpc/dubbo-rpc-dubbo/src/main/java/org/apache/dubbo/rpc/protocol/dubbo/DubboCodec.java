@@ -114,6 +114,9 @@ public class DubboCodec extends ExchangeCodec {
                             ObjectInput in = CodecSupport.deserialize(
                                     channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
                             data = decodeEventData(channel, in, eventPayload);
+                            if (data == null) {
+                                throw new IOException("Decode event response data is null");
+                            }
                         }
                     } else {
                         DecodeableRpcResult result;
@@ -135,6 +138,9 @@ public class DubboCodec extends ExchangeCodec {
                                 result = new DecodeableRpcResult(
                                         channel, res, new UnsafeByteArrayInputStream(readMessageData(is)), inv, proto);
                             }
+                        }
+                        if (result == null) {
+                            throw new IOException("Decode response result is null");
                         }
                         data = result;
                     }
@@ -173,6 +179,9 @@ public class DubboCodec extends ExchangeCodec {
                         ObjectInput in = CodecSupport.deserialize(
                                 channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
                         data = decodeEventData(channel, in, eventPayload);
+                        if (data == null) {
+                            throw new IOException("Decode event request data is null");
+                        }
                     }
                     req.setEvent(true);
                 } else {
@@ -210,6 +219,9 @@ public class DubboCodec extends ExchangeCodec {
                                     new UnsafeByteArrayInputStream(readMessageData(is)),
                                     proto);
                         }
+                    }
+                    if (inv == null) {
+                        throw new IOException("Decode request invocation is null");
                     }
                     data = inv;
                 }
