@@ -1,0 +1,12 @@
+spring:
+  config:
+    import: application-shutdown.yml
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  shutdown: graceful
+
+app:
+  shutdown:
+    timeout-seconds: 30

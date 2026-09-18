@@ -1,0 +1,28 @@
+app:
+  shutdown:
+    timeout-seconds: 30
+    poll-interval-millis: 200
+
+server:
+  shutdown: graceful
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  kafka:
+    listener:
+      ack-mode: manual_immediate
+    consumer:
+      properties:
+        spring.json.trusted.packages: "*"
+
+  main:
+    allow-bean-definition-overriding: false
+
+management:
+  endpoint:
+    shutdown:
+      enabled: false
+    health:
+      probes:
+        enabled: true
