@@ -50,10 +50,10 @@ public final class HtmlCodec implements HttpMessageCodec {
         }
         try {
             if (data instanceof CharSequence) {
-                os.write((data.toString()).getBytes(charset));
+                os.write(escapeHtml((CharSequence) data).getBytes(charset));
                 return;
             }
-            os.write(httpJsonUtils.toJson(data).getBytes(charset));
+            os.write(escapeHtml(httpJsonUtils.toJson(data)).getBytes(charset));
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
@@ -78,5 +78,36 @@ public final class HtmlCodec implements HttpMessageCodec {
     @Override
     public MediaType mediaType() {
         return MediaType.TEXT_HTML;
+    }
+
+    private static String escapeHtml(CharSequence value) {
+        if (value == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(value.length());
+        int length = value.length();
+        for (int i = 0; i < length; i++) {
+            char c = value.charAt(i);
+            switch (c) {
+                case '&':
+                    sb.append("&amp;");
+                    break;
+                case '<':
+                    sb.append("&lt;");
+                    break;
+                case '>':
+                    sb.append("&gt;");
+                    break;
+                case '"':
+                    sb.append("&quot;");
+                    break;
+                case '\'':
+                    sb.append("&#39;");
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 }

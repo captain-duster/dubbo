@@ -57,7 +57,9 @@ public final class PlainTextCodec implements HttpMessageCodec {
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
-            throw new EncodeException("Error encoding plain text", t);
+            throw new EncodeException(
+                    "Error encoding plain text data of type [" + data.getClass().getName() + "], cause type ["
+                            + t.getClass().getName() + "]");
         }
     }
 
@@ -70,7 +72,7 @@ public final class PlainTextCodec implements HttpMessageCodec {
         } catch (HttpStatusException e) {
             throw e;
         } catch (Throwable t) {
-            throw new EncodeException("Error decoding plain text", t);
+            throw new EncodeException("Error decoding plain text data, cause type [" + t.getClass().getName() + "]");
         }
         throw new DecodeException("'text/plain' media-type only supports String as method param.");
     }

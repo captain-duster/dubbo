@@ -78,6 +78,18 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     private static final ErrorTypeAwareLogger LOGGER =
             LoggerFactory.getErrorTypeAwareLogger(AbstractTripleClientStream.class);
     private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
+    private static final int MAX_LOGGED_MESSAGE_LENGTH = 256;
+
+    private static String sanitizeForLogging(String message) {
+        if (message == null) {
+            return null;
+        }
+        String sanitized = message.replaceAll("[\\r\\n]", " ");
+        if (sanitized.length() > MAX_LOGGED_MESSAGE_LENGTH) {
+            sanitized = sanitized.substring(0, MAX_LOGGED_MESSAGE_LENGTH) + "...[redacted]";
+        }
+        return sanitized;
+    }
 
     private final ClientStream.Listener listener;
     protected final TripleWriteQueue writeQueue;
@@ -171,6 +183,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     }
 
     private void transportException(Throwable cause) {
+        LOGGER.error(
+                PROTOCOL_FAILED_RESPONSE,
+                "",
+                "",
+                "Http2 exception occurred while processing stream, payload details redacted for security",
+                cause);
         final TriRpcStatus status =
                 TriRpcStatus.INTERNAL.withDescription("Http2 exception").withCause(cause);
         listener.onComplete(status, null, null, false);
@@ -194,7 +212,15 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     @Override
     public SSLSession getSslSession() {
-        return parent.attr(SSL_SESSION_KEY).get();
+        SSLSession sslSession = parent.attr(SSL_SESSION_KEY).get();
+        if (sslSession == null) {
+            LOGGER.warn(
+                    PROTOCOL_FAILED_RESPONSE,
+                    "",
+                    "",
+                    "SSL session is not established for this stream; PII-carrying payloads require a validated SSL session");
+        }
+        return sslSession;
     }
 
     @Override
@@ -365,14 +391,14 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             final CharSequence contentType = headers.get(HttpHeaderNames.CONTENT_TYPE.getKey());
             if (contentType == null || !GrpcUtils.isGrpcRequest(contentType.toString())) {
                 return TriRpcStatus.fromCode(TriRpcStatus.httpStatusToGrpcCode(httpStatus))
-                        .withDescription("HTTP status: " + httpStatus + ", invalid content-type: " + contentType);
+                        .withDescription("HTTP status: " + httpStatus + ", invalid content-type");
             }
             return null;
         }
 
         void onHeaderReceived(Http2Headers headers) {
             if (transportError != null) {
-                transportError.appendDescription("headers:" + headers);
+                transportError.appendDescription("headers received while error state active, details redacted");
                 return;
             }
             if (headerReceived) {
