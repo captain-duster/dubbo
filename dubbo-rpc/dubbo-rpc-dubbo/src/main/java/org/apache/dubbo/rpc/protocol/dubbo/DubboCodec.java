@@ -141,6 +141,12 @@ public class DubboCodec extends ExchangeCodec {
                     res.setResult(data);
                 } else {
                     ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
+                    if (in == null) {
+                        if (log.isWarnEnabled()) {
+                            log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode response failed: ObjectInput is null");
+                        }
+                        return null;
+                    }
                     res.setErrorMessage(in.readUTF());
                 }
             } catch (Throwable t) {
@@ -172,6 +178,12 @@ public class DubboCodec extends ExchangeCodec {
 
                         ObjectInput in = CodecSupport.deserialize(
                                 channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
+                        if (in == null) {
+                            if (log.isWarnEnabled()) {
+                                log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode request failed: ObjectInput is null");
+                            }
+                            return null;
+                        }
                         data = decodeEventData(channel, in, eventPayload);
                     }
                     req.setEvent(true);
