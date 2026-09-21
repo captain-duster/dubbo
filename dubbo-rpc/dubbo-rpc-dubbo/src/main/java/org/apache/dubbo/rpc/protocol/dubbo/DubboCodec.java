@@ -142,7 +142,19 @@ public class DubboCodec extends ExchangeCodec {
                     res.setResult(data);
                 } else {
                     ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
-                    res.setErrorMessage(in.readUTF());
+                    if (in == null) {
+                        if (log.isWarnEnabled()) {
+                            log.warn(
+                                    PROTOCOL_FAILED_DECODE,
+                                    "",
+                                    "",
+                                    "Decode response failed: deserialized ObjectInput is null, proto: " + proto
+                                            + ", status: " + status);
+                        }
+                        res.setErrorMessage("Decode response failed: deserialized ObjectInput is null");
+                    } else {
+                        res.setErrorMessage(in.readUTF());
+                    }
                 }
             } catch (Throwable t) {
                 if (log.isWarnEnabled()) {
