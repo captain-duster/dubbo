@@ -20,6 +20,7 @@ public class ScopeBeanException extends RuntimeException {
 
     public ScopeBeanException(String message, Throwable cause) {
         super(message, cause);
+        
     }
 
     public ScopeBeanException(String message) {
